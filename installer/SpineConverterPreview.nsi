@@ -3,7 +3,7 @@ Name "Spine 一键转换预览工具"
 !ifndef RELEASE_SUFFIX
   !define RELEASE_SUFFIX "-rc1"
 !endif
-OutFile "..\dist\SpineConverterPreview-OpenSource-Setup-win-x64-1.0.0${RELEASE_SUFFIX}.exe"
+OutFile "..\dist\SpineConverterPreview-SourceAvailable-Setup-win-x64-1.0.0${RELEASE_SUFFIX}.exe"
 InstallDir "$PROGRAMFILES64\SpineConverterPreview"
 InstallDirRegKey HKLM "Software\SpineConverterPreview" "InstallDir"
 RequestExecutionLevel admin

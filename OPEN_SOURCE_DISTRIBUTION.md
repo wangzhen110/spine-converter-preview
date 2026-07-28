@@ -1,8 +1,16 @@
 # 开源与发行边界
 
+> 说明：组合程序限制商业用途，严格来说属于源码可用（source-available），并非 OSI 定义的开源软件。本文件名为历史沿用。
+
 ## 自研代码
 
 仓库根目录 `LICENSE` 覆盖自研转换核心、Godot 界面、构建脚本和项目文档，采用 Apache License 2.0。
+
+## 多版本转换器与非商业限制
+
+`third_party/SpineSkeletonDataConverter/` 来自 `wang606/SpineSkeletonDataConverter`，固定到提交 `5ecb2139b0a1af266974f95abeec6bb8562d1249`，采用 PolyForm Noncommercial License 1.0.0。
+
+该组件允许非商业目的的使用、修改和分享，但禁止商业使用。由于正式程序包含该组件，整个组合程序只能免费用于非商业用途，不得销售、收费授权或作为商业服务的一部分。分发时必须保留 `POLYFORM-NONCOMMERCIAL-LICENSE.txt`、原作者署名和本说明。
 
 ## Spine Runtime 例外
 
@@ -16,9 +24,8 @@
 
 ## 官方二进制
 
-官方二进制由持有适用 Spine Professional 许可证的发行主体构建，并附带 Runtime License、Godot License、.NET License 和第三方声明。第三方不得删除这些文件。
+官方二进制由持有适用 Spine Professional 许可证的发行主体构建，并附带 Runtime License、Godot License、PolyForm Noncommercial License 和第三方声明。第三方不得删除这些文件。
 
 ## 用户素材
 
 仓库与发行包不授予任何示例、客户或用户 Spine 模型的再分发权。测试时只使用自行有权使用的素材，且不要提交到公共仓库。
-

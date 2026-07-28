@@ -42,8 +42,9 @@ if ($LASTEXITCODE -ne 0 -or ($versionOutput -join " ") -notmatch '^4\.7\.1') {
 
 $converterPublish = Join-Path $projectRoot "build/converter-win-x64"
 $productStaging = Join-Path ([System.IO.Path]::GetTempPath()) ("SpineConverterPreview-build-" + [guid]::NewGuid().ToString("N"))
-$converterProject = Join-Path $projectRoot "converter/SpineConverter.Cli/SpineConverter.Cli.csproj"
 $testsProject = Join-Path $projectRoot "converter/SpineConverter.Tests/SpineConverter.Tests.csproj"
+$legacyConverterSource = Join-Path $projectRoot "third_party/SpineSkeletonDataConverter"
+$legacyConverterBuild = Join-Path ([System.IO.Path]::GetTempPath()) "SpineSkeletonDataConverter-build"
 
 function Invoke-PackagedTest {
     param(
@@ -72,15 +73,31 @@ foreach ($path in @($converterPublish, $productStaging)) {
     New-Item -ItemType Directory -Path $path | Out-Null
 }
 
-Write-Host "[1/5] Running converter regression tests"
+Write-Host "[1/5] Running self-developed converter regression tests"
 dotnet run --project $testsProject -c Release
 if ($LASTEXITCODE -ne 0) { throw "Converter regression tests failed." }
 
-Write-Host "[2/5] Publishing the self-contained converter"
-dotnet publish $converterProject -c Release -r win-x64 --self-contained true `
-    -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false `
-    -o $converterPublish
-if ($LASTEXITCODE -ne 0) { throw "Converter publish failed." }
+Write-Host "[2/5] Building the noncommercial multi-version converter"
+if (-not (Test-Path -LiteralPath (Join-Path $legacyConverterSource "CMakeLists.txt"))) {
+    throw "Missing third-party converter submodule. Run: git submodule update --init --recursive"
+}
+$cmakeCommand = Get-Command cmake.exe -ErrorAction SilentlyContinue
+if ($null -eq $cmakeCommand) {
+    $cmakeCommand = Get-ChildItem "$env:LOCALAPPDATA/Microsoft/WinGet/Packages" -Recurse -Filter cmake.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+}
+if ($null -eq $cmakeCommand) { throw "CMake is required to build the multi-version converter." }
+$cmakePath = if ($cmakeCommand -is [System.Management.Automation.ApplicationInfo]) {
+    $cmakeCommand.Source
+} else {
+    $cmakeCommand.FullName
+}
+& $cmakePath -S $legacyConverterSource -B $legacyConverterBuild
+if ($LASTEXITCODE -ne 0) { throw "Multi-version converter configuration failed." }
+& $cmakePath --build $legacyConverterBuild --config Release --parallel
+if ($LASTEXITCODE -ne 0) { throw "Multi-version converter build failed." }
+$legacyConverterExe = Join-Path $legacyConverterBuild "Release/SpineSkeletonDataConverter.exe"
+if (-not (Test-Path -LiteralPath $legacyConverterExe)) { throw "Multi-version converter executable was not produced." }
+Copy-Item -LiteralPath $legacyConverterExe -Destination (Join-Path $converterPublish "SpineConverter.exe") -Force
 
 $toolsDirectory = Join-Path $projectRoot "tools"
 New-Item -ItemType Directory -Force -Path $toolsDirectory | Out-Null
@@ -106,20 +123,17 @@ Copy-Item -LiteralPath (Join-Path $projectRoot "TRADEMARKS.md") -Destination $pr
 Copy-Item -LiteralPath (Join-Path $projectRoot "SPINE-RUNTIMES-LICENSE.txt") -Destination $productStaging -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot "THIRD_PARTY_NOTICES.md") -Destination $productStaging -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot "GODOT-LICENSE.txt") -Destination $productStaging -Force
-Copy-Item -LiteralPath (Join-Path $projectRoot "converter/LICENSE.txt") -Destination (Join-Path $productStaging "SELF-DEVELOPED-CONVERTER-LICENSE.txt") -Force
-$dotnetRoot = Split-Path (Get-Command dotnet -ErrorAction Stop).Source
-Copy-Item -LiteralPath (Join-Path $dotnetRoot "LICENSE.txt") -Destination (Join-Path $productStaging "DOTNET-LICENSE.txt") -Force
-Copy-Item -LiteralPath (Join-Path $dotnetRoot "ThirdPartyNotices.txt") -Destination (Join-Path $productStaging "DOTNET-THIRD-PARTY-NOTICES.txt") -Force
+Copy-Item -LiteralPath (Join-Path $legacyConverterSource "LICENSE") -Destination (Join-Path $productStaging "POLYFORM-NONCOMMERCIAL-LICENSE.txt") -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot "addons/spine_godot/spine_godot_extension.gdextension") -Destination (Split-Path $productAddonWindows -Parent) -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot "addons/spine_godot/windows/libspine_godot.windows.template_release.x86_64.dll") -Destination $productAddonWindows -Force
 
-$editionDescription = "OPEN SOURCE FULL EDITION - all features enabled"
+$editionDescription = "SOURCE-AVAILABLE NONCOMMERCIAL EDITION - all features enabled"
 $buildStatus = if ($DistributionBuild) {
-    "DISTRIBUTION BUILD`r`n$editionDescription`r`nThe builder explicitly acknowledged the Spine license gate. Verify publisher identity, revenue tier, and signing before sale.`r`n"
+    "NONCOMMERCIAL DISTRIBUTION BUILD`r`n$editionDescription`r`nCommercial use is prohibited by the bundled PolyForm Noncommercial component. The builder also acknowledged the Spine license gate.`r`n"
 } elseif ($CandidateBuild) {
-    "CANDIDATE RELEASE - NOT CLEARED FOR SALE`r`n$editionDescription`r`nTechnical release candidate. Confirm the Spine Editor license is Essential, Professional, or Enterprise (not Trial or Education), and replace the publisher display name with the exact business-license registration name before sale.`r`n"
+    "NONCOMMERCIAL CANDIDATE RELEASE`r`n$editionDescription`r`nNot for sale or other commercial use. Confirm the applicable Spine Editor license before distributing Runtime components.`r`n"
 } else {
-    "DEVELOPMENT / ACCEPTANCE BUILD - NOT CLEARED FOR SALE`r`n$editionDescription`r`nRebuild with -DistributionBuild -SpineLicenseAcknowledged only after the publisher's applicable Spine license is verified.`r`n"
+    "NONCOMMERCIAL DEVELOPMENT BUILD`r`n$editionDescription`r`nNot for sale or other commercial use. Rebuild with -DistributionBuild -SpineLicenseAcknowledged only after the Runtime license gate is verified.`r`n"
 }
 $buildStatus | Set-Content -LiteralPath (Join-Path $productStaging "BUILD-STATUS.txt") -Encoding utf8
 
@@ -132,9 +146,9 @@ if (Test-Path -LiteralPath $redundantRootDll) {
 }
 
 $forbiddenFiles = Get-ChildItem -LiteralPath $productStaging -Recurse -File |
-    Where-Object { $_.Name -match '(?i)(editor|template_debug|pdb|SpineSkeletonDataConverter|PolyForm)' }
+    Where-Object { $_.Name -match '(?i)(editor|template_debug|pdb)' }
 if ($forbiddenFiles) {
-    throw "Forbidden development or noncommercial files in product: $($forbiddenFiles.FullName -join ', ')"
+    throw "Forbidden development files in product: $($forbiddenFiles.FullName -join ', ')"
 }
 
 if (-not [string]::IsNullOrWhiteSpace($SmokeTestSource)) {
@@ -180,9 +194,9 @@ for ($attempt = 1; $attempt -le 10; $attempt++) {
 if (-not $moveSucceeded) { throw "Unable to publish the staged product directory." }
 if ($DistributionBuild -or $CandidateBuild) {
     $archiveLabel = if ($DistributionBuild) { "1.0.0" } else { "1.0.0-rc1" }
-    $archivePath = Join-Path $distRoot "SpineConverterPreview-OpenSource-win-x64-$archiveLabel.zip"
+    $archivePath = Join-Path $distRoot "SpineConverterPreview-SourceAvailable-win-x64-$archiveLabel.zip"
     if (Test-Path -LiteralPath $archivePath) { Remove-Item -LiteralPath $archivePath -Force }
     Compress-Archive -Path (Join-Path $outputPath '*') -DestinationPath $archivePath -CompressionLevel Optimal
     Write-Host "Distribution archive built at: $archivePath"
 }
-Write-Host "Commercial package built at: $outputPath"
+Write-Host "Noncommercial package built at: $outputPath"

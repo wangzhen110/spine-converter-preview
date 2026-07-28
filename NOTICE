@@ -3,7 +3,8 @@ Copyright 2026 Qingyun Jingzhi Information Technology Studio
 
 This product includes software developed by project contributors.
 
-The Apache License 2.0 applies only to the self-developed project code. It does
-not apply to Spine Runtime, Godot Engine, Microsoft .NET, or other third-party
-components. See THIRD_PARTY_NOTICES.md and the accompanying license files.
-
+The Apache License 2.0 applies only to the self-developed project code. The
+bundled SpineSkeletonDataConverter is licensed under PolyForm Noncommercial
+1.0.0, making the combined application noncommercial-only. Apache-2.0 also does
+not apply to Spine Runtime, Godot Engine, or other third-party components. See
+THIRD_PARTY_NOTICES.md and the accompanying license files.

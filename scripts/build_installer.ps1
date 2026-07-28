@@ -21,7 +21,7 @@ $arguments += ('"' + $script + '"')
 $process = Start-Process -FilePath $NsisCompilerPath -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
 if ($process.ExitCode -ne 0) { throw "NSIS failed with exit code $($process.ExitCode)." }
 $suffix = if ($DistributionBuild) { "" } else { "-rc1" }
-$installerName = "SpineConverterPreview-OpenSource-Setup-win-x64-1.0.0$suffix.exe"
+$installerName = "SpineConverterPreview-SourceAvailable-Setup-win-x64-1.0.0$suffix.exe"
 $installer = Get-Item (Join-Path $projectRoot ("dist/" + $installerName))
 $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 "$hash  $($installer.Name)" | Set-Content -LiteralPath ($installer.FullName + '.sha256') -Encoding ascii

@@ -1,10 +1,13 @@
 # Spine 一键转换预览工具
 
-一个开源的 Windows 桌面工具，用于批量转换和预览 Spine 骨骼动画。
+一个源码公开、免费且仅限非商业使用的 Windows 桌面工具，用于批量转换和预览 Spine 骨骼动画。
+
+> 本组合项目包含 PolyForm Noncommercial 1.0.0 组件，禁止商业使用、销售或用于其他商业目的。
 
 ## 功能
 
-- Spine 3.8.x `.skel` / `.json` 转换为 Spine 4.2.11 `.skel` / `.json`
+- Spine 3.5–4.2 `.skel` / `.json` 自动识别和双向转换
+- 目标版本：4.2.11、4.1.24、4.0.64、3.8.99
 - 单文件、多文件和文件夹递归导入
 - 自动识别源版本和同名模型
 - 模型切换、动画选择、播放和自动适配预览
@@ -23,7 +26,13 @@
 
 ## 从源码构建
 
-要求 Windows、.NET 8 SDK、Godot 4.7.1 及匹配的 Windows 导出模板。依赖版本和兼容补丁记录在 `UPSTREAM_SOURCES.md` 与 `patches/`。
+要求 Windows、.NET 8 SDK、CMake、Godot 4.7.1 及匹配的 Windows 导出模板。克隆后先初始化子模块：
+
+```powershell
+git submodule update --init --recursive
+```
+
+依赖版本和兼容补丁记录在 `UPSTREAM_SOURCES.md`、`third_party/` 与 `patches/`。
 
 ```powershell
 .\scripts\build_product.ps1 `
@@ -35,9 +44,11 @@
 
 `-SpineLicenseAcknowledged` 不是形式选项。只有在构建和分发主体满足适用 Spine Editor License 条件时才可使用。
 
-## 开源许可
+## 许可说明
 
-自研代码采用 [Apache License 2.0](LICENSE)。这不包括 Spine Runtime、Godot、.NET 或其他第三方组件。
+自研代码采用 [Apache License 2.0](LICENSE)。多版本转换器采用 [PolyForm Noncommercial 1.0.0](third_party/SpineSkeletonDataConverter/LICENSE)，因此整个组合程序仅限非商业使用。这不包括 Spine Runtime、Godot 或其他第三方组件。
+
+由于组合程序限制商业用途，严格来说它属于“source-available（源码可用）”，而不是 OSI 定义的开源软件。
 
 预览功能依赖 `spine-godot` / Spine Runtime。它不属于 Apache-2.0，适用条款见 `SPINE-RUNTIMES-LICENSE.txt` 和 `THIRD_PARTY_NOTICES.md`。修改、构建或分发包含 Spine Runtime 的版本可能要求你持有自己的有效 Spine Editor License。详见官方协议：<https://esotericsoftware.com/spine-editor-license>。
 
@@ -54,4 +65,3 @@
 - 贡献说明：`CONTRIBUTING.md`
 - 安全问题：`SECURITY.md`
 - 发行与许可证边界：`OPEN_SOURCE_DISTRIBUTION.md`
-

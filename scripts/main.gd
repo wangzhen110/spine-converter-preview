@@ -1,6 +1,7 @@
 extends Control
 
-const TARGET_VERSIONS := ["4.2.11"]
+const TARGET_VERSIONS := ["4.2.11", "4.1.24", "4.0.64", "3.8.99"]
+const PREVIEW_RUNTIME_VERSION := "4.2.11"
 const SETTINGS_PATH := "user://settings.cfg"
 
 var input_path := ""
@@ -176,7 +177,7 @@ func build_interface() -> void:
 	heading.add_theme_color_override("font_color", Color("f0e7d2"))
 	header.add_child(heading)
 	var edition_badge := Label.new()
-	edition_badge.text = "开源完整版"
+	edition_badge.text = "源码公开 · 非商用版"
 	edition_badge.add_theme_color_override("font_color", Color("85c7a2"))
 	header.add_child(edition_badge)
 	var header_space := Control.new()
@@ -660,13 +661,10 @@ func _preview_imported_model() -> void:
 	var source := model_paths[model_index]
 	var converter := get_converter_path()
 	var target_version: String = TARGET_VERSIONS[version_select.selected]
-	var cache_dir := ProjectSettings.globalize_path("user://preview_cache")
-	DirAccess.make_dir_recursive_absolute(cache_dir)
-	var preview_path := cache_dir.path_join("%s-v%s.skel" % [str(source.hash()), target_version.replace(".", "_")])
 	set_status("正在准备预览：%s" % source.get_file())
 	var converter_log: Array = []
-	var exit_code := OS.execute(converter, [source, preview_path, "-v", target_version], converter_log, true, false)
-	if exit_code != 0 or not FileAccess.file_exists(preview_path):
+	var preview_path := _create_preview_staging(source, converter_log)
+	if preview_path.is_empty():
 		set_status("模型预览转换失败：%s" % source.get_file(), true)
 		return
 	path_edit.text = source
@@ -790,8 +788,27 @@ func _convert_and_preview() -> void:
 		set_status("转换成功，但未找到同名 .atlas，无法预览", true)
 		details_label.text = "输出：%s\n\n转换日志：\n%s" % [output_path, "\n".join(output)]
 		return
-	set_status("转换完成，正在加载预览...")
-	load_preview(output_path, atlas_path, output)
+	set_status("转换完成，正在准备 %s 预览暂存..." % PREVIEW_RUNTIME_VERSION)
+	var preview_log: Array = []
+	var preview_path := _create_preview_staging(input_path, preview_log)
+	if preview_path.is_empty():
+		set_status("目标文件已生成，但预览暂存转换失败", true)
+		details_label.text = "输出：%s\n\n转换日志：\n%s" % [output_path, "\n".join(output)]
+		return
+	load_preview(preview_path, atlas_path, output + preview_log)
+
+func _create_preview_staging(source: String, converter_log: Array) -> String:
+	var cache_dir := ProjectSettings.globalize_path("user://preview_cache")
+	DirAccess.make_dir_recursive_absolute(cache_dir)
+	var preview_path := cache_dir.path_join("%s-v%s.skel" % [str(source.hash()), PREVIEW_RUNTIME_VERSION.replace(".", "_")])
+	var exit_code := OS.execute(
+		get_converter_path(),
+		[source, preview_path, "-v", PREVIEW_RUNTIME_VERSION],
+		converter_log,
+		true,
+		false
+	)
+	return preview_path if exit_code == 0 and FileAccess.file_exists(preview_path) else ""
 
 func find_atlas_path(source: String) -> String:
 	var direct := source.get_basename() + ".atlas"

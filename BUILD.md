@@ -22,7 +22,7 @@
   -BatchSmokeTestFolder "C:\path\to\licensed-model-folder"
 ```
 
-脚本依次执行转换器回归测试、自包含转换器发布、Godot Release 导出、Runtime 与许可证组装、单模型和批量流程冒烟测试，并写入 `SHA256SUMS.txt`。正式便携包输出为 `dist/SpineConverterPreview-OpenSource-win-x64-1.0.0.zip`。
+脚本依次执行转换器回归测试、自包含转换器发布、Godot Release 导出、Runtime 与许可证组装、单模型和批量流程冒烟测试，并写入 `SHA256SUMS.txt`。正式便携包输出为 `dist/SpineConverterPreview-SourceAvailable-win-x64-1.0.0.zip`。
 
 安装程序：
 
@@ -30,7 +30,7 @@
 .\scripts\build_installer.ps1 -DistributionBuild
 ```
 
-安装器使用 NSIS。输出为 `dist/SpineConverterPreview-OpenSource-Setup-win-x64-1.0.0.exe`。
+安装器使用 NSIS。输出为 `dist/SpineConverterPreview-SourceAvailable-Setup-win-x64-1.0.0.exe`。
 
 ## 赞助二维码
 
@@ -39,4 +39,3 @@
 ## 可复现性边界
 
 构建过程固定依赖版本并生成哈希，但不承诺跨不同编译环境获得逐字节一致的 Godot 或 .NET 二进制。每次发布都应保存生成的哈希清单。
-

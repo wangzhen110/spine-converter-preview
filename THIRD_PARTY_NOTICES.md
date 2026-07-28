@@ -27,15 +27,18 @@ Official agreement: https://esotericsoftware.com/spine-editor-license
 The application executable is built with Godot Engine 4.7.1, licensed under
 the MIT License. The full notice is in `GODOT-LICENSE.txt`.
 
-## Microsoft .NET Runtime
+## SpineSkeletonDataConverter
 
-The converter is published as a self-contained .NET 8 application. The .NET
-license and bundled third-party notices are included as `DOTNET-LICENSE.txt`
-and `DOTNET-THIRD-PARTY-NOTICES.txt`.
+Multi-version JSON/SKEL conversion is provided by
+`wang606/SpineSkeletonDataConverter`, pinned at commit
+`5ecb2139b0a1af266974f95abeec6bb8562d1249`. It is licensed under PolyForm
+Noncommercial License 1.0.0. The combined application may be used, modified,
+and shared only for noncommercial purposes. Attribution and the license must be
+retained. See `POLYFORM-NONCOMMERCIAL-LICENSE.txt`.
 
 ## Self-developed project code
 
-The converter, Godot interface, build scripts, and project documentation are
-independently developed and released under Apache License 2.0. See `LICENSE`
-and `NOTICE`. Apache License 2.0 does not apply to the third-party components
-listed above. The previous PolyForm Noncommercial converter is not included.
+The Godot interface, project-specific integration, build scripts, and project
+documentation are independently developed and released under Apache License
+2.0. See `LICENSE` and `NOTICE`. Apache License 2.0 does not apply to the
+third-party components listed above and does not override their restrictions.

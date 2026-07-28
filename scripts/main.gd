@@ -182,7 +182,7 @@ func build_interface() -> void:
 	var header_space := Control.new()
 	header_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(header_space)
-	if FileAccess.file_exists("res://branding/support-qr.png"):
+	if ResourceLoader.exists("res://branding/support-qr.png"):
 		var support_button := Button.new()
 		support_button.text = "支持项目"
 		support_button.tooltip_text = "查看自愿赞助二维码"
@@ -972,14 +972,27 @@ func set_status(message: String, is_error := false) -> void:
 func _show_support_dialog() -> void:
 	var dialog := AcceptDialog.new()
 	dialog.title = "支持项目"
-	dialog.dialog_text = "完整功能永久免费。赞助仅用于支持后续维护，不影响任何功能。"
+	dialog.get_ok_button().text = "关闭"
+	var content := VBoxContainer.new()
+	content.position = Vector2(20, 48)
+	content.size = Vector2(380, 410)
+	content.add_theme_constant_override("separation", 12)
+	var message := Label.new()
+	message.text = "完整功能永久免费。\n赞助仅用于支持后续维护，不影响任何功能。"
+	message.custom_minimum_size = Vector2(380, 48)
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(message)
 	var qr := TextureRect.new()
 	qr.texture = load("res://branding/support-qr.png")
-	qr.custom_minimum_size = Vector2(320, 320)
-	qr.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	qr.custom_minimum_size = Vector2(350, 350)
+	qr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	qr.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	qr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	qr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	dialog.add_child(qr)
+	content.add_child(qr)
+	dialog.add_child(content)
 	dialog.confirmed.connect(dialog.queue_free)
 	dialog.canceled.connect(dialog.queue_free)
 	add_child(dialog)
-	dialog.popup_centered(Vector2i(420, 470))
+	dialog.popup_centered(Vector2i(420, 520))

@@ -975,17 +975,17 @@ func _show_support_dialog() -> void:
 	dialog.get_ok_button().text = "关闭"
 	var content := VBoxContainer.new()
 	content.position = Vector2(20, 48)
-	content.size = Vector2(380, 410)
+	content.size = Vector2(380, 570)
 	content.add_theme_constant_override("separation", 12)
 	var message := Label.new()
-	message.text = "完整功能永久免费。\n赞助仅用于支持后续维护，不影响任何功能。"
+	message.text = "支付宝扫码赞助\n完整功能永久免费，赞助不影响任何功能。"
 	message.custom_minimum_size = Vector2(380, 48)
 	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(message)
 	var qr := TextureRect.new()
 	qr.texture = load("res://branding/support-qr.png")
-	qr.custom_minimum_size = Vector2(350, 350)
+	qr.custom_minimum_size = Vector2(340, 500)
 	qr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	qr.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	qr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -995,4 +995,4 @@ func _show_support_dialog() -> void:
 	dialog.confirmed.connect(dialog.queue_free)
 	dialog.canceled.connect(dialog.queue_free)
 	add_child(dialog)
-	dialog.popup_centered(Vector2i(420, 520))
+	dialog.popup_centered(Vector2i(420, 680))

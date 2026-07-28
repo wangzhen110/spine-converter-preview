@@ -9,6 +9,7 @@ converter/**/obj/
 *.suo
 *.log
 branding/support-qr.png
+branding/support-qr.png.import
 addons/**/*.TMP
 addons/**/*~RF*
 test-materials/

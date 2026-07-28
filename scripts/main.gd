@@ -217,6 +217,12 @@ func build_interface() -> void:
 	folder_import_button.custom_minimum_size = Vector2(110, 42)
 	folder_import_button.pressed.connect(_open_import_directory_dialog)
 	source_row.add_child(folder_import_button)
+	var clear_selection_button := Button.new()
+	clear_selection_button.text = "清空"
+	clear_selection_button.tooltip_text = "清除当前文件、文件夹列表和预览"
+	clear_selection_button.custom_minimum_size = Vector2(72, 42)
+	clear_selection_button.pressed.connect(_clear_selection)
+	source_row.add_child(clear_selection_button)
 	var conversion_row := HBoxContainer.new()
 	conversion_row.add_theme_constant_override("separation", 10)
 	root.add_child(conversion_row)
@@ -287,7 +293,11 @@ func build_interface() -> void:
 
 	status_label = Label.new()
 	status_label.text = "等待选择文件"
-	status_label.custom_minimum_size.y = 24
+	status_label.custom_minimum_size.y = 48
+	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_label.max_lines_visible = 2
+	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	status_label.clip_text = true
 	status_label.add_theme_color_override("font_color", Color("9aa3af"))
 	root.add_child(status_label)
 
@@ -608,6 +618,28 @@ func _clear_model_collection() -> void:
 	if batch_export_button != null:
 		batch_export_button.disabled = true
 
+func _clear_selection() -> void:
+	_clear_model_collection()
+	clear_preview()
+	input_path = ""
+	output_path = ""
+	atlas_path = ""
+	original_version = "待检测"
+	converted_version = ""
+	path_edit.set_text("")
+	convert_button.disabled = true
+	save_button.disabled = true
+	animation_select.disabled = true
+	play_button.disabled = true
+	auto_button.set_pressed_no_signal(false)
+	auto_button.disabled = true
+	auto_play = false
+	preview_bounds = Rect2()
+	empty_label.visible = true
+	details_label.text = "尚未加载角色"
+	_update_version_label()
+	set_status("已清空，可以重新选择文件或文件夹")
+
 func _change_model(step: int) -> void:
 	if model_paths.is_empty():
 		return
@@ -722,6 +754,10 @@ func _on_path_changed(path: String) -> void:
 	_update_version_label()
 	convert_button.disabled = not FileAccess.file_exists(input_path) or input_path.get_extension().to_lower() not in ["skel", "json"]
 	if convert_button.disabled:
+		output_path = ""
+		atlas_path = ""
+		clear_preview()
+		empty_label.visible = true
 		set_status("请选择有效的 .skel 或 .json 文件", true)
 	else:
 		set_status("文件已就绪，点击“转换并预览”")
@@ -966,7 +1002,8 @@ func _runtime_skeleton_path(source: String) -> String:
 	return destination if error == OK else ""
 
 func set_status(message: String, is_error := false) -> void:
-	status_label.text = message
+	status_label.tooltip_text = message
+	status_label.text = message.replace("\r", " ").replace("\n", " ")
 	status_label.add_theme_color_override("font_color", Color("ef7777") if is_error else Color("85c7a2"))
 
 func _show_support_dialog() -> void:

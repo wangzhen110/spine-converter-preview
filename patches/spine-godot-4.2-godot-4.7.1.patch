@@ -1,0 +1,75 @@
+diff --git a/spine-godot/spine_godot/SpineAtlasResource.cpp b/spine-godot/spine_godot/SpineAtlasResource.cpp
+index 4d10d3d..4320ab6 100644
+--- a/spine-godot/spine_godot/SpineAtlasResource.cpp
++++ b/spine-godot/spine_godot/SpineAtlasResource.cpp
+@@ -319,14 +319,13 @@ Error SpineAtlasResource::load_from_file(const String &path) {
+ #endif
+ 
+ #if VERSION_MAJOR > 3
+-\tJSON *json = memnew(JSON);
++\tRef<JSON> json;
++\tjson.instantiate();
+ \terror = json->parse(json_string);
+ \tif (error != OK) {
+-\t\tmemdelete(json);
+ \t\treturn error;
+ \t}
+ \tVariant result = json->get_data();
+-\tmemdelete(json);
+ #else
+ \tString error_string;
+ \tint error_line;
+@@ -376,10 +375,10 @@ Error SpineAtlasResource::save_to_file(const String &path) {
+ \tcontent["normal_texture_prefix"] = normal_map_prefix;
+ \tcontent["specular_texture_prefix"] = specular_map_prefix;
+ #if VERSION_MAJOR > 3
+-\tJSON *json = memnew(JSON);
++\tRef<JSON> json;
++\tjson.instantiate();
+ \tfile->store_string(json->stringify(content));
+ \tfile->flush();
+-\tmemdelete(json);
+ #else
+ \tfile->store_string(JSON::print(content));
+ \tfile->close();
+diff --git a/spine-godot/spine_godot/register_types.cpp b/spine-godot/spine_godot/register_types.cpp
+index c3eebd6..b3ad1d2 100644
+--- a/spine-godot/spine_godot/register_types.cpp
++++ b/spine-godot/spine_godot/register_types.cpp
+@@ -58,10 +58,10 @@
+ #include "SpineBoneNode.h"
+ #include "spine/Bone.h"
+ 
+-static SpineAtlasResourceFormatLoader *atlas_loader;
+-static SpineAtlasResourceFormatSaver *atlas_saver;
+-static SpineSkeletonFileResourceFormatLoader *skeleton_file_loader;
+-static SpineSkeletonFileResourceFormatSaver *skeleton_file_saver;
++static Ref<SpineAtlasResourceFormatLoader> atlas_loader;
++static Ref<SpineAtlasResourceFormatSaver> atlas_saver;
++static Ref<SpineSkeletonFileResourceFormatLoader> skeleton_file_loader;
++static Ref<SpineSkeletonFileResourceFormatSaver> skeleton_file_saver;
+ 
+ #ifdef TOOLS_ENABLED
+ #ifdef SPINE_GODOT_EXTENSION
+@@ -162,16 +162,16 @@ void register_spine_godot_types() {
+ #endif
+ 
+ #ifdef SPINE_GODOT_EXTENSION
+-\tatlas_loader = memnew(SpineAtlasResourceFormatLoader);
++\tatlas_loader.instantiate();
+ \tResourceLoader::get_singleton()->add_resource_format_loader(atlas_loader);
+ 
+-\tatlas_saver = memnew(SpineAtlasResourceFormatSaver);
++\tatlas_saver.instantiate();
+ \tResourceSaver::get_singleton()->add_resource_format_saver(atlas_saver);
+ 
+-\tskeleton_file_loader = memnew(SpineSkeletonFileResourceFormatLoader);
++\tskeleton_file_loader.instantiate();
+ \tResourceLoader::get_singleton()->add_resource_format_loader(skeleton_file_loader);
+ 
+-\tskeleton_file_saver = memnew(SpineSkeletonFileResourceFormatSaver);
++\tskeleton_file_saver.instantiate();
+ \tResourceSaver::get_singleton()->add_resource_format_saver(skeleton_file_saver);
+ #else
+ #if VERSION_MAJOR > 3
+

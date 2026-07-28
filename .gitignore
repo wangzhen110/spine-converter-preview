@@ -1,0 +1,16 @@
+.godot/
+build/
+dist/
+tools/SpineConverter.exe
+converter/**/bin/
+converter/**/obj/
+*.pdb
+*.user
+*.suo
+*.log
+branding/support-qr.png
+addons/**/*.TMP
+addons/**/*~RF*
+test-materials/
+user-materials/
+商业发行信息填写表.md

@@ -718,6 +718,7 @@ func _convert_files_batch(files: PackedStringArray) -> void:
 		var converter_log: Array = []
 		var exit_code := OS.execute(converter, [source, destination, "-v", target_version], converter_log, true, false)
 		if exit_code == 0 and FileAccess.file_exists(destination):
+			_write_conversion_report(source, destination, target_version, converter_log)
 			success_count += 1
 			last_source = source
 			last_output = destination
@@ -782,6 +783,7 @@ func _convert_and_preview() -> void:
 	if exit_code != 0 or not FileAccess.file_exists(output_path):
 		set_status("转换失败，退出码 %d\n%s" % [exit_code, "\n".join(output)], true)
 		return
+	_write_conversion_report(input_path, output_path, target_version, output)
 	save_button.disabled = false
 	atlas_path = find_atlas_path(input_path)
 	if atlas_path.is_empty():
@@ -809,6 +811,47 @@ func _create_preview_staging(source: String, converter_log: Array) -> String:
 		false
 	)
 	return preview_path if exit_code == 0 and FileAccess.file_exists(preview_path) else ""
+
+func _write_conversion_report(source: String, destination: String, target_version: String, converter_log: Array) -> void:
+	var source_version := _detect_original_version(source)
+	var source_line := _version_line(source_version)
+	var target_line := _version_line(target_version)
+	var warnings: Array[String] = []
+	if source_line > target_line:
+		warnings.append("这是降级转换。新版字段若在旧版格式中没有对应项，可能被移除或近似表达。")
+	if source_line >= 40 and target_line <= 38:
+		warnings.append("4.x 到 3.8：贝塞尔曲线会转换为 3.x 相对控制点，旋转关键帧会改写为最短路径语义。")
+		warnings.append("4.x 的比例路径间距会转换为 3.x 的长度间距。")
+	if source_line >= 42 and target_line <= 41:
+		warnings.append("4.2 到旧版：约束顺序会重新映射。请重点检查多个约束相互依赖的动画。")
+	if source_line >= 42 and target_line < 42:
+		warnings.append("4.2 物理约束在旧版中没有等价能力；包含物理时间线时可能丢失。")
+	if source_line < target_line:
+		warnings.append("这是升级转换。旧版数据会映射到新版结构，但不会自动获得新版专属功能。")
+	if warnings.is_empty():
+		warnings.append("未检测到已知的跨大版本损失规则；仍建议在目标 Spine Runtime 中逐个检查动画。")
+	var report := {
+		"schema": "spine-converter-report/1",
+		"source_file": source.get_file(),
+		"output_file": destination.get_file(),
+		"source_version": source_version,
+		"target_version": target_version,
+		"source_format": source.get_extension().to_lower(),
+		"target_format": destination.get_extension().to_lower(),
+		"direction": "downgrade" if source_line > target_line else ("upgrade" if source_line < target_line else "same-version"),
+		"warnings": warnings,
+		"converter_log": converter_log.map(func(line): return str(line)),
+	}
+	var report_path := destination + ".report.json"
+	var file := FileAccess.open(report_path, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(report, "  "))
+
+func _version_line(version: String) -> int:
+	var parts := version.split(".")
+	if parts.size() < 2 or not parts[0].is_valid_int() or not parts[1].is_valid_int():
+		return -1
+	return int(parts[0]) * 10 + int(parts[1])
 
 func find_atlas_path(source: String) -> String:
 	var direct := source.get_basename() + ".atlas"

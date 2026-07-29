@@ -1,0 +1,41 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Title,Microsoft YaHei UI,60,&H00F5F7FA,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,2,0,8,50,50,70,1
+Style: Sub,Microsoft YaHei UI,31,&H00A8E6C5,&H000000FF,&H0011161F,&H00000000,0,0,0,0,100,100,0,0,1,1,0,8,50,50,158,1
+Style: Feature,Microsoft YaHei UI,46,&H00F5F7FA,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,2,0,8,70,70,1090,1
+Style: Detail,Microsoft YaHei UI,33,&H00C4CBD6,&H000000FF,&H0011161F,&H00000000,0,0,0,0,100,100,0,0,1,1,0,8,80,80,1185,1
+Style: License,Microsoft YaHei UI,32,&H0083DDB2,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,1,0,2,60,60,185,1
+Style: Footer,Microsoft YaHei UI,30,&H009BA7B8,&H000000FF,&H0011161F,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,55,55,80,1
+Style: UI,Microsoft YaHei UI,22,&H0083DDB2,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: UITitle,Microsoft YaHei UI,20,&H00F5F7FA,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: UIBadge,Microsoft YaHei UI,17,&H0083DDB2,&H000000FF,&H0011161F,&H00000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: UIPath,Microsoft YaHei UI,20,&H00C4CBD6,&H000000FF,&H0011161F,&H00000000,0,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:36.00,Title,,0,0,0,,Spine 多版本转换预览工具
+Dialogue: 0,0:00:00.00,0:00:36.00,Sub,,0,0,0,,自动识别 3.5–4.2 · JSON / SKEL 双向转换
+Dialogue: 0,0:00:00.00,0:00:05.00,Feature,,0,0,0,,四个目标版本自由选择
+Dialogue: 0,0:00:00.00,0:00:05.00,Detail,,0,0,0,,3.8.99  ·  4.0.64  ·  4.1.24  ·  4.2.11
+Dialogue: 0,0:00:05.00,0:00:10.00,Feature,,0,0,0,,高转低 · 低转高
+Dialogue: 0,0:00:05.00,0:00:10.00,Detail,,0,0,0,,自动识别原始版本，输出版本由你指定
+Dialogue: 0,0:00:10.00,0:00:16.00,Feature,,0,0,0,,整个文件夹直接导入
+Dialogue: 0,0:00:10.00,0:00:16.00,Detail,,0,0,0,,递归识别模型 · 左右切换 · 批量导出
+Dialogue: 0,0:00:16.00,0:00:22.00,Feature,,0,0,0,,统一动画预览
+Dialogue: 0,0:00:16.00,0:00:22.00,Detail,,0,0,0,,动画选择 · 播放暂停 · 重播 · 自动适配
+Dialogue: 0,0:00:22.00,0:00:28.00,Feature,,0,0,0,,免安装，也提供安装程序
+Dialogue: 0,0:00:22.00,0:00:28.00,Detail,,0,0,0,,Windows 10 / 11 · 完整功能免费使用
+Dialogue: 0,0:00:28.00,0:00:36.00,Feature,,0,0,0,,源码公开 · 免费 · 仅限非商业使用
+Dialogue: 0,0:00:28.00,0:00:36.00,Detail,,0,0,0,,github.com/wangzhen110/spine-converter-preview
+Dialogue: 0,0:00:00.00,0:00:36.00,License,,0,0,0,,注意：降级可能丢失目标旧版本不支持的新特性，请保留原文件
+Dialogue: 0,0:00:00.00,0:00:36.00,Footer,,0,0,0,,Source-available · PolyForm Noncommercial 1.0.0
+Dialogue: 2,0:00:00.00,0:00:36.00,UITitle,,0,0,0,,{\pos(138,347)}Spine 一键转换预览工具
+Dialogue: 2,0:00:00.00,0:00:36.00,UIBadge,,0,0,0,,{\pos(340,347)}源码公开 · 非商用版
+Dialogue: 2,0:00:00.00,0:00:36.00,UIPath,,0,0,0,,{\pos(350,420)}已导入模型集合（358 个模型）
+Dialogue: 2,0:00:00.00,0:00:36.00,UIPath,,0,0,0,,{\pos(420,536)}默认保存到用户选择目录

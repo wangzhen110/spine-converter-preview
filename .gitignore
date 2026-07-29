@@ -14,3 +14,13 @@ addons/**/*.TMP
 addons/**/*~RF*
 test-materials/
 user-materials/
+# Video working files; keep only the reproducible final demo and its source.
+video/demo-raw.mp4
+video/*.wav
+video/*qa*.png
+video/qa-*.png
+video/frame-*.png
+video/demo-v2-*.png
+video/Spine一键转换预览工具-*.mp4
+video/Spine多版本转换预览工具-*.mp4
+video/demo-v2-preview.png

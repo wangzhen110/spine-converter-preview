@@ -45,6 +45,7 @@ $productStaging = Join-Path ([System.IO.Path]::GetTempPath()) ("SpineConverterPr
 $testsProject = Join-Path $projectRoot "converter/SpineConverter.Tests/SpineConverter.Tests.csproj"
 $legacyConverterSource = Join-Path $projectRoot "third_party/SpineSkeletonDataConverter"
 $legacyConverterBuild = Join-Path ([System.IO.Path]::GetTempPath()) "SpineSkeletonDataConverter-build"
+$spine43Patch = Join-Path $projectRoot "patches/spine-converter-43-json-compat.patch"
 
 function Invoke-PackagedTest {
     param(
@@ -80,6 +81,13 @@ if ($LASTEXITCODE -ne 0) { throw "Converter regression tests failed." }
 Write-Host "[2/5] Building the noncommercial multi-version converter"
 if (-not (Test-Path -LiteralPath (Join-Path $legacyConverterSource "CMakeLists.txt"))) {
     throw "Missing third-party converter submodule. Run: git submodule update --init --recursive"
+}
+if (Test-Path -LiteralPath $spine43Patch) {
+    & git -C $legacyConverterSource apply --check --ignore-space-change $spine43Patch 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        & git -C $legacyConverterSource apply --ignore-space-change $spine43Patch
+        if ($LASTEXITCODE -ne 0) { throw "Spine 4.3 compatibility patch could not be applied." }
+    }
 }
 $cmakeCommand = Get-Command cmake.exe -ErrorAction SilentlyContinue
 if ($null -eq $cmakeCommand) {

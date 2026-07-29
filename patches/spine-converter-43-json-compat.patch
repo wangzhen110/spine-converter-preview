@@ -1,0 +1,146 @@
+diff --git a/README.md b/README.md
+index e4b9732..5c312b1 100644
+--- a/README.md
++++ b/README.md
+@@ -65,6 +65,8 @@ SpineSkeletonDataConverter.exe new.skel old.json -v 3.8.99
+ #   --help          Show this help message
+ 
+ # Supported Spine versions: 3.5.x, 3.6.x, 3.7.x, 3.8.x, 4.0.x, 4.1.x, 4.2.x
++# This product wrapper additionally exposes a restricted 4.3 JSON common-subset path.
++# 4.3 SKEL and 4.3-only Slider/DrawOrderFolder fields are rejected explicitly.
+ # Note: Version must be specified in complete x.y.z format (e.g., 4.2.11, not 4.2)
+ # Input version detection is automatic based on file content.
+ # Output version defaults to input version unless specified with -v.
+diff --git a/src/main.cpp b/src/main.cpp
+index fd9dd7e..5e29830 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -4,6 +4,7 @@
+ #include <vector>
+ #include <filesystem>
+ #include <regex>
++#include <functional>
+ 
+ #include "SkeletonData.h"
+ 
+@@ -15,6 +16,7 @@ enum class SpineVersion {
+     Version40 = 4,
+     Version41 = 5,
+     Version42 = 6,
++    Version43 = 7,
+     Invalid = -1
+ };
+ 
+@@ -43,6 +45,23 @@ bool belowOrEqualVersion(SpineVersion version, SpineVersion target) {
+     return static_cast<int>(version) <= static_cast<int>(target);
+ }
+ 
++bool containsSpine43OnlyField(const Json& value, std::string& field) {
++    if (value.is_object()) {
++        for (auto it = value.begin(); it != value.end(); ++it) {
++            if (it.key() == "slider" || it.key() == "drawOrderFolder" || it.key() == "scaleYMode") {
++                field = it.key();
++                return true;
++            }
++            if (containsSpine43OnlyField(it.value(), field)) return true;
++        }
++    } else if (value.is_array()) {
++        for (const auto& item : value) {
++            if (containsSpine43OnlyField(item, field)) return true;
++        }
++    }
++    return false;
++}
++
+ SpineVersion detectSpineVersion(const std::string& filePath) {
+     try {
+         std::ifstream ifs(filePath, std::ios::binary);
+@@ -76,6 +95,8 @@ SpineVersion detectSpineVersion(const std::string& filePath) {
+                 return SpineVersion::Version41;
+             } else if (majorMinor == "4.2") {
+                 return SpineVersion::Version42;
++            } else if (majorMinor == "4.3") {
++                return SpineVersion::Version43;
+             }
+         }
+     }
+@@ -95,6 +116,7 @@ std::string getVersionString(SpineVersion version) {
+         case SpineVersion::Version40: return "4.0";
+         case SpineVersion::Version41: return "4.1";
+         case SpineVersion::Version42: return "4.2";
++        case SpineVersion::Version43: return "4.3";
+         default: return "Unknown";
+     }
+ }
+@@ -116,6 +138,7 @@ SpineVersion parseVersionString(const std::string& versionStr) {
+         else if (majorMinor == "4.0") return SpineVersion::Version40;
+         else if (majorMinor == "4.1") return SpineVersion::Version41;
+         else if (majorMinor == "4.2") return SpineVersion::Version42;
++        else if (majorMinor == "4.3") return SpineVersion::Version43;
+     }
+     
+     return SpineVersion::Invalid;
+@@ -128,6 +151,14 @@ bool convertFile(const std::string& inputFile, const std::string& outputFile,
+                 bool removeCurveOption) {
+     
+     try {
++        // Spine 4.3 SKEL has a changed binary layout (slider/folder/sequence
++        // records). Until its dedicated reader/writer is integrated, fail
++        // explicitly instead of producing a corrupt binary file.
++        if ((inputVersion == SpineVersion::Version43 && inputFormat == FileFormat::Skel) ||
++            (outputVersion == SpineVersion::Version43 && outputFormat == FileFormat::Skel)) {
++            std::cerr << "Spine 4.3 SKEL conversion is not available yet; use JSON for the verified 4.3 compatibility path.\n";
++            return false;
++        }
+         // Read input file
+         std::vector<unsigned char> binaryData;
+         Json jsonData;
+@@ -146,6 +177,13 @@ bool convertFile(const std::string& inputFile, const std::string& outputFile,
+                 return false;
+             }
+             ifs >> jsonData;
++            if (inputVersion == SpineVersion::Version43) {
++                std::string field;
++                if (containsSpine43OnlyField(jsonData, field)) {
++                    std::cerr << "Spine 4.3 field '" << field << "' requires the dedicated 4.3 reader/writer and is not supported by the compatibility path.\n";
++                    return false;
++                }
++            }
+         }
+         
+         // Read data using input version
+@@ -207,6 +245,17 @@ bool convertFile(const std::string& inputFile, const std::string& outputFile,
+                 }
+                 break;
+             }
++            case SpineVersion::Version43: {
++                // The 4.2 normalized model is a valid subset of 4.3 JSON.
++                // 4.3-only records are intentionally rejected by the SKEL
++                // guard above and will be reported as compatibility warnings.
++                if (inputFormat == FileFormat::Skel) {
++                    std::cerr << "Spine 4.3 SKEL input is not available yet.\n";
++                    return false;
++                }
++                skelData = spine42::readJsonData(jsonData);
++                break;
++            }
+             default:
+                 std::cerr << "Error: Unsupported input Spine version\n";
+                 return false;
+@@ -392,6 +441,16 @@ bool convertFile(const std::string& inputFile, const std::string& outputFile,
+                 }
+                 break;
+             }
++            case SpineVersion::Version43: {
++                auto outputJson = spine42::writeJsonData(skelData);
++                std::ofstream ofs(outputFile);
++                if (!ofs) {
++                    std::cerr << "Error: Cannot create output file: " << outputFile << "\n";
++                    return false;
++                }
++                ofs << dumpJson(outputJson);
++                break;
++            }
+             default:
+                 std::cerr << "Error: Unsupported output Spine version\n";
+                 return false;

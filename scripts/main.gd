@@ -1,6 +1,6 @@
 extends Control
 
-const TARGET_VERSIONS := ["4.2.11", "4.1.24", "4.0.64", "3.8.99"]
+const TARGET_VERSIONS := ["4.2.11", "4.1.24", "4.0.64", "3.8.99", "4.3.00"]
 const PREVIEW_RUNTIME_VERSION := "4.2.11"
 const SETTINGS_PATH := "user://settings.cfg"
 
@@ -943,6 +943,13 @@ func _detect_original_version(path: String) -> String:
 
 func _on_target_version_changed(_index: int) -> void:
 	converted_version = TARGET_VERSIONS[version_select.selected]
+	if converted_version.begins_with("4.3"):
+		# 4.3 binary layout needs a dedicated writer; the verified path is JSON.
+		format_select.select(1)
+		format_select.set_item_disabled(0, true)
+		set_status("Spine 4.3 当前支持 JSON 兼容转换；SKEL 专用读写器仍在接入中")
+	else:
+		format_select.set_item_disabled(0, false)
 	_update_version_label()
 
 func _update_version_label() -> void:

@@ -83,8 +83,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $legacyConverterSource "CMakeLists.t
     throw "Missing third-party converter submodule. Run: git submodule update --init --recursive"
 }
 if (Test-Path -LiteralPath $spine43Patch) {
-    & git -C $legacyConverterSource apply --check --ignore-space-change $spine43Patch 2>$null
-    if ($LASTEXITCODE -eq 0) {
+    $converterMain = Join-Path $legacyConverterSource "src/main.cpp"
+    $patchAlreadyApplied = Select-String -LiteralPath $converterMain -Pattern 'Version43' -Quiet
+    if (-not $patchAlreadyApplied) {
         & git -C $legacyConverterSource apply --ignore-space-change $spine43Patch
         if ($LASTEXITCODE -ne 0) { throw "Spine 4.3 compatibility patch could not be applied." }
     }
@@ -106,6 +107,10 @@ if ($LASTEXITCODE -ne 0) { throw "Multi-version converter build failed." }
 $legacyConverterExe = Join-Path $legacyConverterBuild "Release/SpineSkeletonDataConverter.exe"
 if (-not (Test-Path -LiteralPath $legacyConverterExe)) { throw "Multi-version converter executable was not produced." }
 Copy-Item -LiteralPath $legacyConverterExe -Destination (Join-Path $converterPublish "SpineConverter.exe") -Force
+
+Write-Host "[QA] Running guarded Spine 4.3 compatibility tests"
+& (Join-Path $projectRoot "scripts/test_spine43_compat.ps1") -ConverterPath $legacyConverterExe
+if ($LASTEXITCODE -ne 0) { throw "Spine 4.3 compatibility tests failed." }
 
 $toolsDirectory = Join-Path $projectRoot "tools"
 New-Item -ItemType Directory -Force -Path $toolsDirectory | Out-Null
